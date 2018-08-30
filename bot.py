@@ -475,7 +475,7 @@ def read_json(file_name):
 
 users = {}
 groups = {}
-token = "658973131:AAFrclnxWr764WatQwy_KO3bq6D8-PyRP4c"
+token = ""
 illegal = ["\\", "/", ":", "*", "?", "\"", "<", ">", "|"]
 
 if __name__ == "__main__":
