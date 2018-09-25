@@ -460,7 +460,7 @@ class Group(Conversation):
         hashed_pass = h.hexdigest()
         return read_json(self.reminders)["join_pass"] == hashed_pass
 
-root = "C:/Users/USER/Desktop/RemBot/"
+root = "C:/Users/USER/Desktop/RemBot/MemRemBot/"
 
 
 def save_as_json(data, file_name, sort_keys=True, indent=2):
@@ -475,7 +475,7 @@ def read_json(file_name):
 
 users = {}
 groups = {}
-token = ""
+token = "658973131:AAFrclnxWr764WatQwy_KO3bq6D8-PyRP4c"
 illegal = ["\\", "/", ":", "*", "?", "\"", "<", ">", "|"]
 
 if __name__ == "__main__":
@@ -492,7 +492,7 @@ if __name__ == "__main__":
     try:
         c = read_json("bot_data")["convos"]
         for p in c:
-            users[str(p)] = Conversation(p)
+            users[p] = Conversation(p)
             log("User {} added from database.".format(str(p)))
     except KeyError:
         bd = read_json("bot_data")
@@ -527,8 +527,8 @@ if __name__ == "__main__":
 
                 msg_splat = msg["message"]["text"].split(" ")
 
-                if str(mfrom) not in users.keys():
-                    users[str(mfrom)] = Conversation(mfrom)
+                if mfrom not in users.keys():
+                    users[mfrom] = Conversation(mfrom)
                     bd = read_json("bot_data")
                     bd["convos"].append(mfrom)
                     save_as_json(bd, "bot_data")
@@ -739,7 +739,7 @@ if __name__ == "__main__":
                                     "This might because of a mistake on your side or mine. " +
                                     "If you believe the mistake is on my side please send the time stamp: "
                                     + str(log_number) + " to Alexey.")
-                    log("ERROR Encountered: " + e.message + "\nBy: " + str(mfrom))
+                    log("ERROR Encountered: " + str(e.message) + "\nBy: " + str(mfrom))
                     traceback.print_exc()
 
         if len(msgs) > 0:
