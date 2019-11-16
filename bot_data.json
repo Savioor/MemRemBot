@@ -2,6 +2,9 @@
   "convos": [
     509789218
   ], 
-  "groups": [], 
-  "next": 177802405
+  "groups": [
+    "group-%dX=0", 
+    "group-e!pR0"
+  ], 
+  "next": 500429693
 }

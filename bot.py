@@ -460,7 +460,7 @@ class Group(Conversation):
         hashed_pass = h.hexdigest()
         return read_json(self.reminders)["join_pass"] == hashed_pass
 
-root = "C:/Users/USER/Desktop/RemBot/MemRemBot/"
+root = "/hdd/projects/MemRemBot/MemRemBot/"
 
 
 def save_as_json(data, file_name, sort_keys=True, indent=2):
@@ -666,7 +666,7 @@ if __name__ == "__main__":
 
                 elif msg_splat[0] == "/editself":
                     user_data = read_json(str(mfrom))
-                    user_data["context"] = str(mfrom)
+                    user_data["context"] = int(str(mfrom))
                     save_as_json(user_data, str(mfrom))
                     bot.sendMessage(mfrom,
                                     "Now editing personal reminders!")
@@ -706,7 +706,7 @@ if __name__ == "__main__":
 
                     context = str(mfrom)
 
-                    users[context].add_group_reminder(msg_splat[1:])
+                    users[int(context)].add_group_reminder(msg_splat[1:])
 
                     bot.sendMessage(mfrom, "Group successfully joined!")
 
