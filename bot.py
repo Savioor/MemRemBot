@@ -15,6 +15,7 @@ t0 = datetime.datetime(1970, 1, 1)
 class UserError(Exception):
     pass
 
+
 fni = UserError("Not implemented yet")
 
 
@@ -84,20 +85,20 @@ class Reminder(object):
 log_number = 1
 def log(string):
     global log_number
-    print "---------------------------------------------------------------------\n" + \
+    print("---------------------------------------------------------------------\n" + \
           "TIME: " + str(datetime.datetime.now()) + "\n" + \
           "LOG NUMBER: " + str(log_number) + "\n\n" \
-          "MESSAGE:\n" + str(string)
+          "MESSAGE:\n" + str(string))
     log_number += 1
 
 
 def parse_time(time_str):
     if type(time_str) != list:
-        data_splat = filter(lambda a: a != "and", time_str.split(" "))
+        data_splat = list(filter(lambda a: a != "and", time_str.split(" ")))
     else:
         data_splat = time_str
     total_time_secs = 0
-    for i in xrange(0, len(data_splat), 2):
+    for i in range(0, len(data_splat), 2):
         multiplier = float(data_splat[i])
         try:
             total_time_secs += Reminder.time_map[data_splat[i + 1]] * multiplier
@@ -184,7 +185,7 @@ class ContReminder(Reminder):
         Reminder.__init__(self)
         self.trig = False
         self.message = ""
-        data_splat = filter(lambda a: a != "and", date_str.split(" "))[1:]
+        data_splat = list(filter(lambda a: a != "and", date_str.split(" ")))[1:]
 
         if "that" in data_splat:
             ind = data_splat.index("that")
@@ -255,7 +256,7 @@ class BasicReminder(Reminder):
         # remind me in n item[s] and ... [that message]
         Reminder.__init__(self)
         self.message = ""
-        data_splat = filter(lambda a: a != "and", date_str.split(" "))
+        data_splat = list(filter(lambda a: a != "and", date_str.split(" ")))
         tt = data_splat[0]
         data_splat = data_splat[1:]
 
@@ -345,10 +346,12 @@ class Conversation(object):
     def run_all_reminders(self, bot):
         data = read_json(self.reminders)
 
-        for key in data["reminders"].keys():
-            data["reminders"] = run_rem(bot, self.ID, data["reminders"], key)
+        data_copy = read_json(self.reminders)
 
-        save_as_json(data, self.reminders)
+        for key in data["reminders"].keys():
+            data_copy["reminders"] = run_rem(bot, self.ID, data_copy["reminders"], key)
+
+        save_as_json(data_copy, self.reminders)
 
     def remove_reminder(self, ID):
         data = read_json(self.reminders)
@@ -360,9 +363,6 @@ class Conversation(object):
     def add_basic_reminder(self, date):
         data = read_json(self.reminders)
 
-        if len(data["reminders"]) > 10:
-            raise UserError("Oi mate you got a licence for that? (max 10 reminders)")
-
         toAdd = BasicReminder(date).get_json_compatible()
         data["reminders"][toAdd["id"]] = toAdd
 
@@ -372,8 +372,6 @@ class Conversation(object):
     def add_group_reminder(self, data_splat):
         data = read_json(self.reminders)
 
-        if len(data["reminders"]) > 10:
-            raise UserError("Oi mate you got a licence for that? (max 10 reminders)")
 
         toAdd = GroupReminder(data_splat[0], data_splat[1]).get_json_compatible()
         data["reminders"][toAdd["id"]] = toAdd
@@ -383,9 +381,6 @@ class Conversation(object):
 
     def add_cont_reminder(self, indata):
         data = read_json(self.reminders)
-
-        if len(data["reminders"]) > 10:
-            raise UserError("Oi mate you got a licence for that? (max 10 reminders)")
 
         toAdd = ContReminder(indata).get_json_compatible()
         data["reminders"][toAdd["id"]] = toAdd
@@ -429,11 +424,12 @@ class Group(Conversation):
 
     def dummy_run_all(self):
         data = read_json(self.reminders)
+        data_copy = read_json(self.reminders)
 
         for key in data["reminders"].keys():
-            data["reminders"] = run_dummy(data["reminders"], key)
+            data_copy["reminders"] = run_dummy(data_copy["reminders"], key)
 
-        save_as_json(data, self.reminders)
+        save_as_json(data_copy, self.reminders)
 
     @staticmethod
     def create_from_file(idd):
@@ -450,17 +446,26 @@ class Group(Conversation):
 
     def auth_admin(self, password):
         h = hashlib.md5()
-        h.update(password)
+        h.update(password.encode("ascii"))
         hashed_pass = h.hexdigest()
         return read_json(self.reminders)["admin_pass"] == hashed_pass
 
     def auth_join(self, password):
         h = hashlib.md5()
-        h.update(password)
+        h.update(password.encode("ascii"))
         hashed_pass = h.hexdigest()
         return read_json(self.reminders)["join_pass"] == hashed_pass
 
-root = "/hdd/projects/MemRemBot/MemRemBot/"
+    def __str__(self):
+        toRet = ""
+        data = read_json(self.reminders)["reminders"]
+        for key in data.keys():
+            toRet += run_str(data, key) + "\n~~~~~~~~~~~~~~~~~~~~~~~\n"
+        toRet = "\n~~~~~~~~~~~~~~~~~~~~~~~\n".join(toRet.split("\n~~~~~~~~~~~~~~~~~~~~~~~\n")[:-1])
+        return toRet
+
+
+root = ""
 
 
 def save_as_json(data, file_name, sort_keys=True, indent=2):
@@ -472,6 +477,7 @@ def read_json(file_name):
     with open(root + file_name + ".json", "r") as f:
         r = json.load(f)
     return r
+
 
 users = {}
 groups = {}
@@ -658,9 +664,9 @@ if __name__ == "__main__":
                         groups[context].remove_reminder(" ".join(msg_splat[1:]))
                     bot.sendMessage(mfrom, "Reminder successfully removed!")
 
-                elif msg_splat[0] == "/closebot":
-                    # TODO REMOVE THIS FROM FINAL VERSION
-                    active = False
+                # elif msg_splat[0] == "/closebot":
+                #     # TODO REMOVE THIS FROM FINAL VERSION
+                #     active = False
 
                 # GROUP STUFF
 
@@ -690,7 +696,7 @@ if __name__ == "__main__":
                         id_end += 1
                         id_base = id_base[:-1] + str(id_end)
 
-                    groups[id_base] = Group(id_base, msg_splat[1], msg_splat[2])
+                    groups[id_base] = Group(id_base, msg_splat[1].encode("ascii"), msg_splat[2].encode("ascii"))
                     s = read_json("bot_data")
                     s["groups"].append(id_base)
                     save_as_json(s, "bot_data")
@@ -732,14 +738,14 @@ if __name__ == "__main__":
             except Exception as e:
                 if type(e) == UserError:
                     bot.sendMessage(mfrom,
-                                    e.message)
+                                    str(e))
                 else:
                     bot.sendMessage(mfrom,
-                                    "Something happened but I'm not gonna tell you.\n" +
+                                    "Something happened.\n" +
                                     "This might because of a mistake on your side or mine. " +
                                     "If you believe the mistake is on my side please send the time stamp: "
                                     + str(log_number) + " to Alexey.")
-                    log("ERROR Encountered: " + str(e.message) + "\nBy: " + str(mfrom))
+                    log("ERROR Encountered: " + str(e) + "\nBy: " + str(mfrom))
                     traceback.print_exc()
 
         if len(msgs) > 0:
